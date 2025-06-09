@@ -4,9 +4,9 @@ import pandas as pd
 pd.set_option('future.no_silent_downcasting', True)
 import re
 
-def importar_conjunto_datos(ruta_principal:str, escala:str, destino:str=None):
+def preprocesar_conjunto_datos(ruta_principal:str, escala:str, destino:str=None):
     """
-    Importa un conjunto de datos del Censo INEGI 2020 y lo convierte en un DataFrame de pandas.
+    Preprocesa un conjunto de datos del Censo INEGI 2020 y lo convierte en un DataFrame de pandas.
 
     Configura los tipos de datos de columnas específicas según la versión del conjunto de datos 
     ("iter" o "ageb") para mantener consistencia.
@@ -20,13 +20,13 @@ def importar_conjunto_datos(ruta_principal:str, escala:str, destino:str=None):
         destino (str): Ruta al archivo .csv que contiene el conjunto de datos.
 
     Returns:
-        pd.DataFrame: DataFrame con los datos importados y los tipos de datos configurados.
+        pd.DataFrame: DataFrame con los datos preprocesados.
 
     Raises:
         ValueError: Si los parámetros no cumplen con las validaciones:
-            - El valor especificado para ruta_principal no es una cadena
-            - El valor especificado para destino no es una cadena o None
-            - La ruta especificada no existe o no fue especificada.
+            - El valor especificado para ruta_principal no es una cadena.
+            - El valor especificado para destino no es una cadena o None.
+            - La ruta especificada no existe.
             - El destino especificado no existe.
             - El valor del parámetro 'escala' no es "state", "mun" o "ageb".
             - El archivo de datos encontrado en la ruta especificada no contiene las variables esperadas para la escala especificada.
@@ -34,7 +34,7 @@ def importar_conjunto_datos(ruta_principal:str, escala:str, destino:str=None):
     
     if not isinstance(ruta_principal, str):
         raise ValueError(f"El parámetro 'ruta_principal' debe ser una cadena")
-    if not os.path.exists(ruta_principal) or ruta_principal is None:
+    if not os.path.exists(ruta_principal):
         raise ValueError(f"No se encontró la ruta especificada para 'ruta_principal': {ruta_principal}")
     
     if destino is not None:
@@ -150,6 +150,98 @@ def importar_conjunto_datos(ruta_principal:str, escala:str, destino:str=None):
         
         return resultado
 
+    else:
+        raise ValueError("El valor del parámetro 'escala' debe ser \"state\", \"mun\" o \"ageb\"")
+    
+    
+def importar_conjunto_datos(ruta:str, escala:str):
+    """
+    Importa un conjunto de datos del Censo INEGI 2020 resultado de preprocesar los datos orignales desde un archivo .csv mediante la función preprocesar_conjunto_datos
+    Filtra los datos para asegurar que correspondan a la escala seleccionada.
+
+    Args:
+        ruta (str): Ruta al archivo .csv que contiene el conjunto de datos.
+        escala (str): Escala del conjunto de datos. Puede ser:
+            - "state": Datos a nivel estatal.
+            - "mun": Datos a nivel municipal.
+            - "ageb": Datos a nivel AGEB (Área Geoestadística Básica).
+
+    Returns:
+        pd.DataFrame: DataFrame con los datos importados según la escala.
+
+    Raises:
+        ValueError: Si los parámetros no cumplen con las validaciones:
+            - El valor especificado para 'ruta' no es una cadena.
+            - La ruta especificada no existe.
+            - El valor del parámetro 'escala' no es "state", "mun" o "ageb".
+            - El archivo de datos no contiene las variables esperadas para la escala especificada.
+            - El archivo de datos no contiene datos correspondientes a la escala especificada.
+    """
+    
+    if not isinstance(ruta, str):
+        raise ValueError(f"El parámetro 'ruta' debe ser una cadena")
+    if not os.path.exists(ruta):
+        raise ValueError(f"No se encontró la ruta especificada para 'ruta': {ruta}")
+
+    if escala == "state":
+        dtype_dict = {
+            "ENTIDAD": str,
+            "MUN": str,
+            "LOC": str
+        }
+        df = pd.read_csv(ruta, dtype=dtype_dict, low_memory=False)
+        
+        variables_representativas = ["ENTIDAD", "NOM_ENT", "MUN", "NOM_MUN", "LOC", "NOM_LOC", "LONGITUD", "LATITUD", "ALTITUD", "TAMLOC"]
+        variables_diferentes = set(variables_representativas) - set(df.columns)
+        
+        if len(variables_diferentes) != 0:
+            raise ValueError(f"El archivo de datos encontrado en la ruta {ruta} no contiene las siguientes variables esperadas para la escala '{escala}': \n {variables_diferentes}")
+        
+        if not ((df["MUN"].eq("000")) & (df["LOC"].eq("0000"))).all():
+            raise ValueError(f"El archivo de datos encontrado no contiene datos en la escala especificada ('{escala}')")
+        
+        return df
+    
+    elif escala == "mun":
+        dtype_dict = {
+            "ENTIDAD": str,
+            "MUN": str,
+            "LOC": str
+        }
+        df = pd.read_csv(ruta, dtype=dtype_dict, low_memory=False)
+        
+        variables_representativas = ["ENTIDAD", "NOM_ENT", "MUN", "NOM_MUN", "LOC", "NOM_LOC", "LONGITUD", "LATITUD", "ALTITUD", "TAMLOC"]
+        variables_diferentes = set(variables_representativas) - set(df.columns)
+        
+        if len(variables_diferentes) != 0:
+            raise ValueError(f"El archivo de datos encontrado en la ruta {ruta} no contiene las siguientes variables esperadas para la escala '{escala}': \n {variables_diferentes}")
+        
+        if not (~(df["MUN"].eq("000")) & (df["LOC"].eq("0000"))).all():
+            raise ValueError(f"El archivo de datos encontrado no contiene datos en la escala especificada ('{escala}')")
+        
+        return df
+        
+    elif escala == "ageb":
+        dtype_dict = {
+            "ENTIDAD": str,
+            "MUN": str,
+            "LOC": str,
+            "AGEB": str,
+            "MZA": str
+        }
+        df = pd.read_csv(ruta, dtype=dtype_dict, low_memory=False)
+    
+        variables_representativas = ["ENTIDAD", "NOM_ENT", "MUN", "NOM_MUN", "LOC", "NOM_LOC", "AGEB", "MZA"]
+        variables_diferentes = set(variables_representativas) - set(df.columns)
+        
+        if len(variables_diferentes) != 0:
+            raise ValueError(f"El archivo de datos encontrado en la ruta {ruta} no contiene las siguientes variables esperadas para la escala '{escala}': \n {variables_diferentes}")
+        
+        if not (~(df["AGEB"].eq("0000")) & (df["MZA"].eq("000"))).all():
+            raise ValueError(f"El archivo de datos encontrado no contiene datos en la escala especificada ('{escala}')")
+        
+        return df
+        
     else:
         raise ValueError("El valor del parámetro 'escala' debe ser \"state\", \"mun\" o \"ageb\"")
 
