@@ -40,8 +40,9 @@ def importar_conjunto_datos(ruta_principal:str, escala:str, destino:str=None):
     if destino is not None:
         if not isinstance(destino, str):
             raise ValueError(f"El parámetro 'destino' debe ser una cadena")
-        if not os.path.exists(destino):
-            raise ValueError(f"No se encontró la ruta especificada para 'destino': {destino}")
+        directorio_destino = os.path.dirname(destino)
+        if not os.path.exists(os.path.dirname(destino)):
+            raise ValueError(f"No se encontró la ruta especificada para 'destino': {os.path.dirname(destino)}")
     
     if escala.lower() == "state":
         
