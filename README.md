@@ -1,2 +1,2 @@
-# C3_censo_INEGI_2020
+# C3_Procesamiento_Censo_INEGI_2020
 
