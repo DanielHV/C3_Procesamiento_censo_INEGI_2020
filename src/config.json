@@ -1,0 +1,21 @@
+    {
+        "data_state" : "../data/preprocessed/state_cpv2020.csv",
+        "data_mun" : "../data/preprocessed/mun_cpv2020.csv",
+        "data_ageb" : "../data/preprocessed/ageb_cpv2020.csv",
+        "dict_data" : "../data/raw/iter_00_cpv2020/diccionario_datos/diccionario_datos_iter_00CSV20.csv",
+        
+        "variables_a_procesar_list" : {
+            "POBTOT" : ["OCUPVIVPAR"],
+            "TOTHOG" : ["HOGJEF_F", "HOGJEF_M"],
+            "None" : ["REL_H_M", "PROM_HNV", "GRAPROES", "GRAPROES_F", "GRAPROES_M", "PROM_OCUP", "PRO_OCUP_C", "POBTOT", "TOTHOG", "VIVTOT", "TVIVHAB", "TVIVPAR", "VIVPAR_HAB", "VIVPARH_CV", "TVIVPARHAB", "VIVPAR_DES", "VIVPAR_UT"]
+        },
+
+        "variables_a_procesar_regex" : {
+            "POBTOT" : "^(?!.*TOT)(?!.*PROM)(?!.*PRO_OCUP)P.*",
+            "TVIVPARHAB" : "^VPH.*"
+        },
+        
+        "q" : 10,
+        
+        "ruta_salida" : "./output/procesamiento.csv"
+    }

@@ -426,7 +426,7 @@ class ProcesadorCenso2020:
             variables_faltantes = variables_consideradas - variables_en_diccionario
             raise ValueError(f"Las siguientes variables numéricas del DataFrame no están presentes en las llaves del diccionario: {', '.join(variables_faltantes)}")
         
-        print(f"Variables excluidas: {self.variables_excluidas}")
+        # print(f"Variables excluidas: {self.variables_excluidas}")
     
     
     def calcular_porcentaje(self, escala:str, var:str, base_porcentaje: str) -> pd.Series:
